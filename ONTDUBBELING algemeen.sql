@@ -50,7 +50,7 @@ FROM (
 		CASE WHEN COALESCE(p.opt_out,'f') = 'f' THEN 'JA' WHEN p.opt_out = 't' THEN 'NEEN' ELSE 'JA' END email_ontvangen,
 		CASE WHEN COALESCE(p.opt_out_letter,'f') = 'f' THEN 'JA' WHEN p.opt_out_letter = 't' THEN 'NEEN' ELSE 'JA' END post_ontvangen,
 		similarity(p.name,bron.Voornaam || ' ' || bron.naam) sim_naam,
-		similarity(p2.name,bron.Voornaam || ' ' || bron.naam) sim_partner
+		similarity(p2.name,bron.Voornaam || ' ' || bron.naam) sim_partner,
 		similarity(ccs.name,bron.straatnaam) sim_straat,
 		--
 		CASE WHEN RTRIM(LTRIM(LOWER(p.name))) = RTRIM(LTRIM(LOWER(bron.Voornaam || ' ' || bron.naam))) THEN 1 ELSE 0 END check_naam,
