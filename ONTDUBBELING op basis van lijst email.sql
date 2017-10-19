@@ -36,7 +36,11 @@ SELECT DISTINCT bron.bronid bron_id, bron.email,
 	CASE
 		WHEN p.inactive_id IN (1,8) THEN p.active_partner_id ELSE 0
 	END actieve_partner_id,
-	p3.membership_state
+	p3.membership_state,
+	p.active, p.deceased, p.membership_state status, 
+	p2.display_name, p2.membership_state,
+	similarity(p.email,bron.email) sim_email,
+	similarity(p.email_work,bron.email) sim_emailwerk
 FROM _AV_temp_eMail bron
 	JOIN res_partner p ON RTRIM(LTRIM(LOWER(p.email))) = RTRIM(LTRIM(LOWER(bron.email))) --OR RTRIM(LTRIM(LOWER(p.email_work))) = RTRIM(LTRIM(LOWER(bron.email)))
 	--JOIN res_partner p ON p.membership_nbr = bron.lidnummer
@@ -54,18 +58,19 @@ SELECT DISTINCT bron.bronid bron_id, bron.email,
 	CASE
 		WHEN p.inactive_id IN (1,8) THEN p.active_partner_id ELSE 0
 	END actieve_partner_id,
-	p3.membership_state
+	p3.membership_state,
+	p.active, p.deceased, p.membership_state status, 
+	p2.display_name, p2.membership_state,
+	similarity(p.email,bron.email) sim_email,
+	similarity(p.email_work,bron.email) sim_emailwerk
 FROM _AV_temp_eMail bron
 	JOIN res_partner p ON RTRIM(LTRIM(LOWER(p.email_work))) = RTRIM(LTRIM(LOWER(bron.email)))
 	--gegevens van eventuele partner
 	LEFT OUTER JOIN res_partner p2 ON p.relation_partner_id = p2.id
 	LEFT OUTER JOIN partner_inactive pi ON p.inactive_id = pi.id
 	LEFT OUTER JOIN res_partner p3 ON p.active_partner_id = p3.id
-
 	
-
-
-
+	
 --SELECT * FROM res_partner LIMIT 100	
 --SELECT * FROM res_country_city_street LIMIT 100
 	
