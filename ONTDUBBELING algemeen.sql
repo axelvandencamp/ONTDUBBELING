@@ -12,13 +12,18 @@ DROP TABLE IF EXISTS _AV_temp_algemeen;
 
 CREATE TABLE _AV_temp_algemeen 
 (bron_id NUMERIC,
- naam TEXT,
+ dummy1 TEXT,
  voornaam TEXT,
+ naam TEXT,
  straat TEXT,
  nummer TEXT,
+ dummy2 TEXT,
  postcode TEXT,
  gemeente TEXT,
+ dummy3 TEXT,
+ dummy4 TEXT,
  email TEXT
+ , lidnummer TEXT
 );
 
 SELECT * FROM _AV_temp_algemeen WHERE lower(naam) = 'daniels'
@@ -141,10 +146,12 @@ CREATE TABLE _AV_temp_controletabel
  active TEXT,
  deceased TEXT,
  status TEXT,
+ create_uid NUMERIC,
  partner TEXT,
  status_partner TEXT,
  mail_ontvangen TEXT,
  post_ontvangen TEXT,
+ nooit_contacteren TEXT,
  sim_naam NUMERIC,
  sim_partner NUMERIC,
  sim_straat NUMERIC,
@@ -170,7 +177,7 @@ INSERT INTO _AV_temp_controletabel (
 	FROM	(
 		SELECT y.*, 
 		ROW_NUMBER() OVER (PARTITION BY bron_id ORDER BY controle DESC, sim_email DESC) AS r
-		FROM	myvar v, 
+		FROM	--myvar v, 
 			(
 			SELECT x.*, (x.check_naam + x.check_straat + x.check_postcode + x.check_email + x.check_email_work) controle
 			FROM (
@@ -188,9 +195,11 @@ INSERT INTO _AV_temp_controletabel (
 					END actieve_partner_id,
 					p3.membership_state,
 					p.active, p.deceased, p.membership_state status, 
+					p.create_uid,
 					p2.display_name, p2.membership_state,
 					CASE WHEN COALESCE(p.opt_out,'f') = 'f' THEN 'JA' WHEN p.opt_out = 't' THEN 'NEEN' ELSE 'JA' END email_ontvangen,
 					CASE WHEN COALESCE(p.opt_out_letter,'f') = 'f' THEN 'JA' WHEN p.opt_out_letter = 't' THEN 'NEEN' ELSE 'JA' END post_ontvangen,
+					p.iets_te_verbergen,
 					similarity(p.name,bron.Voornaam || ' ' || bron.naam) sim_naam,
 					similarity(p2.name,bron.Voornaam || ' ' || bron.naam) sim_partner,
 					similarity(p.street,bron.straat) sim_straat,
@@ -204,7 +213,7 @@ INSERT INTO _AV_temp_controletabel (
 					CASE WHEN RTRIM(LTRIM(LOWER(p.street))) = RTRIM(LTRIM(LOWER(bron.straat))) THEN 1 ELSE 0 END check_straat,
 					CASE WHEN RTRIM(LTRIM(cc.zip)) = RTRIM(LTRIM(bron.postcode)) THEN 1 ELSE 0 END check_postcode--,
 					--CASE WHEN RTRIM(LTRIM(p.membership_nbr::text)) = RTRIM(LTRIM(bron.membership_number)) THEN 1 ELSE 0 END check_lidnummer
-				FROM _AV_temp_algemeen bron, myvar v, res_partner p
+				FROM _AV_temp_algemeen bron, res_partner p
 					--JOIN res_partner p ON p.email = bb.email
 					JOIN res_country c ON p.country_id = c.id
 					JOIN res_country_city_street ccs ON p.street_id = ccs.id
@@ -228,7 +237,7 @@ INSERT INTO _AV_temp_controletabel (
 	FROM	(
 		SELECT y.*, 
 		ROW_NUMBER() OVER (PARTITION BY bron_id ORDER BY controle DESC, sim_emailwerk DESC) AS r
-		FROM	myvar v, 
+		FROM	--myvar v, 
 			(
 			SELECT x.*, (x.check_naam + x.check_straat + x.check_postcode + x.check_email + x.check_email_work) controle
 			FROM (
@@ -246,9 +255,11 @@ INSERT INTO _AV_temp_controletabel (
 					END actieve_partner_id,
 					p3.membership_state,
 					p.active, p.deceased, p.membership_state status, 
+					p.create_uid,
 					p2.display_name, p2.membership_state,
 					CASE WHEN COALESCE(p.opt_out,'f') = 'f' THEN 'JA' WHEN p.opt_out = 't' THEN 'NEEN' ELSE 'JA' END email_ontvangen,
 					CASE WHEN COALESCE(p.opt_out_letter,'f') = 'f' THEN 'JA' WHEN p.opt_out_letter = 't' THEN 'NEEN' ELSE 'JA' END post_ontvangen,
+					p.iets_te_verbergen,
 					similarity(p.name,bron.Voornaam || ' ' || bron.naam) sim_naam,
 					similarity(p2.name,bron.Voornaam || ' ' || bron.naam) sim_partner,
 					similarity(p.street,bron.straat) sim_straat,
@@ -262,7 +273,7 @@ INSERT INTO _AV_temp_controletabel (
 					CASE WHEN RTRIM(LTRIM(LOWER(p.street))) = RTRIM(LTRIM(LOWER(bron.straat))) THEN 1 ELSE 0 END check_straat,
 					CASE WHEN RTRIM(LTRIM(cc.zip)) = RTRIM(LTRIM(bron.postcode)) THEN 1 ELSE 0 END check_postcode--,
 					--CASE WHEN RTRIM(LTRIM(p.membership_nbr::text)) = RTRIM(LTRIM(bron.membership_number)) THEN 1 ELSE 0 END check_lidnummer
-				FROM _AV_temp_algemeen bron, myvar v, res_partner p
+				FROM _AV_temp_algemeen bron, res_partner p
 					--JOIN res_partner p ON p.email = bb.email
 					JOIN res_country c ON p.country_id = c.id
 					JOIN res_country_city_street ccs ON p.street_id = ccs.id
@@ -286,7 +297,7 @@ INSERT INTO _AV_temp_controletabel (
 	FROM	(
 		SELECT y.*, 
 		ROW_NUMBER() OVER (PARTITION BY bron_id ORDER BY controle DESC, sim_straat DESC) AS r
-		FROM	myvar v, 
+		FROM	--myvar v, 
 			(
 			SELECT x.*, (x.check_naam + x.check_straat + x.check_postcode + x.check_email + x.check_email_work) controle
 			FROM (
@@ -304,9 +315,11 @@ INSERT INTO _AV_temp_controletabel (
 					END actieve_partner_id,
 					p3.membership_state,
 					p.active, p.deceased, p.membership_state status, 
+					p.create_uid,
 					p2.display_name, p2.membership_state,
 					CASE WHEN COALESCE(p.opt_out,'f') = 'f' THEN 'JA' WHEN p.opt_out = 't' THEN 'NEEN' ELSE 'JA' END email_ontvangen,
 					CASE WHEN COALESCE(p.opt_out_letter,'f') = 'f' THEN 'JA' WHEN p.opt_out_letter = 't' THEN 'NEEN' ELSE 'JA' END post_ontvangen,
+					p.iets_te_verbergen,
 					similarity(p.name,bron.Voornaam || ' ' || bron.naam) sim_naam,
 					similarity(p2.name,bron.Voornaam || ' ' || bron.naam) sim_partner,
 					similarity(p.street,bron.straat) sim_straat,
@@ -320,7 +333,7 @@ INSERT INTO _AV_temp_controletabel (
 					CASE WHEN RTRIM(LTRIM(LOWER(p.street))) = RTRIM(LTRIM(LOWER(bron.straat))) THEN 1 ELSE 0 END check_straat,
 					CASE WHEN RTRIM(LTRIM(cc.zip)) = RTRIM(LTRIM(bron.postcode)) THEN 1 ELSE 0 END check_postcode--,
 					--CASE WHEN RTRIM(LTRIM(p.membership_nbr::text)) = RTRIM(LTRIM(bron.membership_number)) THEN 1 ELSE 0 END check_lidnummer
-				FROM _AV_temp_algemeen bron, myvar v, res_partner p
+				FROM _AV_temp_algemeen bron, res_partner p
 					--JOIN res_partner p ON p.email = bb.email
 					JOIN res_country c ON p.country_id = c.id
 					JOIN res_country_city_street ccs ON p.street_id = ccs.id
@@ -347,7 +360,7 @@ INSERT INTO _AV_temp_controletabel (
 	FROM	(
 		SELECT y.*, 
 		ROW_NUMBER() OVER (PARTITION BY bron_id ORDER BY controle DESC, sim_naam DESC) AS r
-		FROM	myvar v, 
+		FROM	--myvar v, 
 			(
 			SELECT x.*, (x.check_naam + x.check_straat + x.check_postcode + x.check_email + x.check_email_work) controle
 			FROM (
@@ -365,9 +378,11 @@ INSERT INTO _AV_temp_controletabel (
 					END actieve_partner_id,
 					p3.membership_state,
 					p.active, p.deceased, p.membership_state status, 
+					p.create_uid,
 					p2.display_name, p2.membership_state,
 					CASE WHEN COALESCE(p.opt_out,'f') = 'f' THEN 'JA' WHEN p.opt_out = 't' THEN 'NEEN' ELSE 'JA' END email_ontvangen,
 					CASE WHEN COALESCE(p.opt_out_letter,'f') = 'f' THEN 'JA' WHEN p.opt_out_letter = 't' THEN 'NEEN' ELSE 'JA' END post_ontvangen,
+					p.iets_te_verbergen,
 					similarity(p.name,bron.Voornaam || ' ' || bron.naam) sim_naam,
 					similarity(p2.name,bron.Voornaam || ' ' || bron.naam) sim_partner,
 					similarity(p.street,bron.straat) sim_straat,
@@ -381,7 +396,7 @@ INSERT INTO _AV_temp_controletabel (
 					CASE WHEN RTRIM(LTRIM(LOWER(p.street))) = RTRIM(LTRIM(LOWER(bron.straat))) THEN 1 ELSE 0 END check_straat,
 					CASE WHEN RTRIM(LTRIM(cc.zip)) = RTRIM(LTRIM(bron.postcode)) THEN 1 ELSE 0 END check_postcode--,
 					--CASE WHEN RTRIM(LTRIM(p.membership_nbr::text)) = RTRIM(LTRIM(bron.membership_number)) THEN 1 ELSE 0 END check_lidnummer
-				FROM _AV_temp_algemeen bron, myvar v, res_partner p
+				FROM _AV_temp_algemeen bron, res_partner p
 					--JOIN res_partner p ON p.email = bb.email
 					JOIN res_country c ON p.country_id = c.id
 					JOIN res_country_city_street ccs ON p.street_id = ccs.id
@@ -400,6 +415,70 @@ INSERT INTO _AV_temp_controletabel (
 		ORDER BY bron_id--, controle, sim_naam DESC	
 		) z
 	WHERE r = 1);
+--------------------------------------------------
+-- controle op basis van LIDNUMMER
+--------------------------------------------------
+/*
+INSERT INTO _AV_temp_controletabel (
+	SELECT *, 'lidnummer' AS type_controle, 1 AS lid
+	FROM	(
+		SELECT y.*, 
+		ROW_NUMBER() OVER (PARTITION BY bron_id ORDER BY controle DESC, sim_naam DESC) AS r
+		FROM	--myvar v, 
+			(
+			SELECT x.*, (x.check_naam + x.check_straat + x.check_postcode + x.check_email + x.check_email_work) controle
+			FROM (
+				SELECT bron.bron_id bron_id, p.id, p.first_name, p.last_name, RTRIM(LTRIM(bron.Voornaam)) || ' ' || RTRIM(LTRIM(bron.naam)) bron_naam, 
+					p.email, p.email_work, bron.email bron_email, 
+					--NULL email_work,
+					p.street, RTRIM(LTRIM(bron.straat)) bron_straat, 
+					cc.name gemeente, RTRIM(LTRIM(bron.gemeente)) bron_gemeente, cc.zip postcode, RTRIM(LTRIM(bron.postcode)) bron_postcode,
+					p.membership_nbr,
+					CASE
+						WHEN p.inactive_id IN (1,8) THEN 'dubbel (via website)' ELSE ''
+					END inactieve_dubbel,
+					CASE
+						WHEN p.inactive_id IN (1,8) THEN p.active_partner_id ELSE 0
+					END actieve_partner_id,
+					p3.membership_state,
+					p.active, p.deceased, p.membership_state status, 
+					p.create_uid,
+					p2.display_name, p2.membership_state,
+					CASE WHEN COALESCE(p.opt_out,'f') = 'f' THEN 'JA' WHEN p.opt_out = 't' THEN 'NEEN' ELSE 'JA' END email_ontvangen,
+					CASE WHEN COALESCE(p.opt_out_letter,'f') = 'f' THEN 'JA' WHEN p.opt_out_letter = 't' THEN 'NEEN' ELSE 'JA' END post_ontvangen,
+					p.iets_te_verbergen,
+					similarity(p.name,bron.Voornaam || ' ' || bron.naam) sim_naam,
+					similarity(p2.name,bron.Voornaam || ' ' || bron.naam) sim_partner,
+					similarity(p.street,bron.straat) sim_straat,
+					similarity(COALESCE(p.email,'_'),bron.email) sim_email,
+					similarity(COALESCE(p.email_work,'_'),bron.email) sim_emailwerk,
+					--
+					CASE WHEN RTRIM(LTRIM(LOWER(p.name))) = RTRIM(LTRIM(LOWER(bron.Voornaam || ' ' || bron.naam))) THEN 1 ELSE 0 END check_naam,
+					CASE WHEN RTRIM(LTRIM(LOWER(p.email))) = RTRIM(LTRIM(LOWER(bron.email))) THEN 1 ELSE 0 END check_email,
+					CASE WHEN RTRIM(LTRIM(LOWER(p.email_work))) = RTRIM(LTRIM(LOWER(bron.email))) THEN 1 ELSE 0 END check_email_work,
+					--0 check_email, 0 check_email_work,
+					CASE WHEN RTRIM(LTRIM(LOWER(p.street))) = RTRIM(LTRIM(LOWER(bron.straat))) THEN 1 ELSE 0 END check_straat,
+					CASE WHEN RTRIM(LTRIM(cc.zip)) = RTRIM(LTRIM(bron.postcode)) THEN 1 ELSE 0 END check_postcode--,
+					--CASE WHEN RTRIM(LTRIM(p.membership_nbr::text)) = RTRIM(LTRIM(bron.membership_number)) THEN 1 ELSE 0 END check_lidnummer
+				FROM _AV_temp_algemeen bron, res_partner p
+					--JOIN res_partner p ON p.email = bb.email
+					JOIN res_country c ON p.country_id = c.id
+					JOIN res_country_city_street ccs ON p.street_id = ccs.id
+					JOIN res_country_city cc ON p.zip_id = cc.id
+					--gegevens van eventuele partner
+					LEFT OUTER JOIN res_partner p2 ON p.relation_partner_id = p2.id
+					LEFT OUTER JOIN partner_inactive pi ON p.inactive_id = pi.id
+					LEFT OUTER JOIN res_partner p3 ON p.active_partner_id = p3.id	
+				WHERE RTRIM(LTRIM(LOWER(p.membership_nbr::text))) = CASE 
+										WHEN RTRIM(LTRIM(LOWER(bron.lidnummer))) = ''
+										THEN 'dubby bron'
+										ELSE RTRIM(LTRIM(LOWER(bron.lidnummer))) END
+				) x
+			) y
+		ORDER BY bron_id--, controle, sim_naam DESC	
+		) z
+	WHERE r = 1);
+*/	
 ---------------------------------------------------
 /*
 SELECT * FROM _AV_temp_controletabel WHERE lid = 1 --THEN 1
@@ -431,10 +510,11 @@ UPDATE _AV_temp_controletabel
 SET lid = CASE WHEN lid = 0 AND controle <= 3 AND check_straat = 1 AND check_postcode = 1 AND sim_partner >= 0.4 THEN 1 ELSE lid END;
 
 --volledige selectie ter controle logica procedure
-SELECT * FROM
+SELECT SQ1.*, u.login FROM
 	(SELECT *, ROW_NUMBER() OVER (PARTITION BY bron_id ORDER BY controle DESC, sim_naam DESC) r2
 	FROM _AV_temp_controletabel 
 	WHERE lid > 0) SQ1
+	JOIN res_users u ON u.id = SQ1.create_uid
 WHERE SQ1.r2 = 1
 --AND id = 17156
 --WHERE bron_id = 188 --17156
