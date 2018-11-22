@@ -441,8 +441,8 @@ INSERT INTO _AV_temp_controletabel (
 						WHEN p.inactive_id IN (1,8) THEN p.active_partner_id ELSE 0
 					END actieve_partner_id,
 					p3.membership_state,
-					p.active, p.deceased, p.membership_state status, 
-					p.create_uid,
+					p.active, p.deceased, p.membership_state status,
+					p.create_uid, 
 					p2.display_name, p2.membership_state,
 					CASE WHEN COALESCE(p.opt_out,'f') = 'f' THEN 'JA' WHEN p.opt_out = 't' THEN 'NEEN' ELSE 'JA' END email_ontvangen,
 					CASE WHEN COALESCE(p.opt_out_letter,'f') = 'f' THEN 'JA' WHEN p.opt_out_letter = 't' THEN 'NEEN' ELSE 'JA' END post_ontvangen,
@@ -495,19 +495,21 @@ SELECT * FROM _AV_temp_controletabel WHERE lid = 0 AND controle <= 3 AND check_s
 UPDATE _AV_temp_controletabel
 SET lid = CASE WHEN lid = 1 THEN 1 ELSE lid END;
 UPDATE _AV_temp_controletabel
+SET lid = CASE WHEN lid = 0 AND (check_email = 1 OR check_email_work = 1) THEN 1 ELSE lid END;
+UPDATE _AV_temp_controletabel
 SET lid = CASE WHEN lid = 0 AND controle > 3 THEN 1 ELSE lid END;
 UPDATE _AV_temp_controletabel
-SET lid = CASE WHEN lid = 0 AND controle <= 3 AND check_naam = 1 AND check_postcode = 1 AND check_straat = 1 THEN 1 ELSE lid END;
+SET lid = CASE WHEN lid = 0 AND controle <= 3 AND (check_email = 0 AND check_email_work = 0) AND check_naam = 1 AND check_postcode = 1 AND check_straat = 1 THEN 1 ELSE lid END;
 UPDATE _AV_temp_controletabel
-SET lid = CASE WHEN lid = 0 AND controle <= 3 AND check_naam = 1 AND check_postcode = 1 AND sim_straat >= 0.4 THEN 1 ELSE lid END;
+SET lid = CASE WHEN lid = 0 AND controle <= 3 AND (check_email = 0 AND check_email_work = 0) AND check_naam = 1 AND check_postcode = 1 AND sim_straat >= 0.4 THEN 1 ELSE lid END;
 UPDATE _AV_temp_controletabel
-SET lid = CASE WHEN lid = 0 AND controle <= 3 AND check_straat = 1 AND check_postcode = 1 AND check_naam = 1 THEN 1 ELSE lid END;
+SET lid = CASE WHEN lid = 0 AND controle <= 3 AND (check_email = 0 AND check_email_work = 0) AND check_straat = 1 AND check_postcode = 1 AND check_naam = 1 THEN 1 ELSE lid END;
 UPDATE _AV_temp_controletabel
-SET lid = CASE WHEN lid = 0 AND controle <= 3 AND check_straat = 1 AND check_postcode = 1 AND sim_naam >= 0.4 THEN 1 ELSE lid END;
+SET lid = CASE WHEN lid = 0 AND controle <= 3 AND (check_email = 0 AND check_email_work = 0) AND check_straat = 1 AND check_postcode = 1 AND sim_naam >= 0.4 THEN 1 ELSE lid END;
 UPDATE _AV_temp_controletabel
-SET lid = CASE WHEN lid = 0 AND controle <= 3 AND check_straat = 1 AND check_postcode = 1 AND sim_naam BETWEEN 0.2 AND 0.4 THEN 2 ELSE lid END;
+SET lid = CASE WHEN lid = 0 AND controle <= 3 AND (check_email = 0 AND check_email_work = 0) AND check_straat = 1 AND check_postcode = 1 AND sim_naam BETWEEN 0.2 AND 0.4 THEN 2 ELSE lid END;
 UPDATE _AV_temp_controletabel
-SET lid = CASE WHEN lid = 0 AND controle <= 3 AND check_straat = 1 AND check_postcode = 1 AND sim_partner >= 0.4 THEN 1 ELSE lid END;
+SET lid = CASE WHEN lid = 0 AND controle <= 3 AND (check_email = 0 AND check_email_work = 0) AND check_straat = 1 AND check_postcode = 1 AND sim_partner >= 0.4 THEN 1 ELSE lid END;
 
 --volledige selectie ter controle logica procedure
 SELECT SQ1.*, u.login FROM
